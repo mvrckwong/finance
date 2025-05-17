@@ -1,7 +1,7 @@
 import numpy as np
 
 import syntheticChrissAlmgren as sca
-from ddpg_agent import Agent
+from agent.ddpg import Agent
 
 from collections import deque
 
@@ -9,7 +9,11 @@ from collections import deque
 env = sca.MarketEnvironment()
 
 # Initialize Feed-forward DNNs for Actor and Critic models. 
-agent = Agent(state_size=env.observation_space_dimension(), action_size=env.action_space_dimension(), random_seed=0)
+agent = Agent(
+    state_size=env.observation_space_dimension(), 
+    action_size=env.action_space_dimension(), 
+    random_seed=0
+)
 
 # Set the liquidation time
 lqt = 60
