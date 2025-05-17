@@ -21,7 +21,7 @@ n_trades = 60
 tr = 1e-6
 
 # Set the number of episodes to run the simulation
-episodes = 10000
+episodes = 1000
 
 shortfall_hist = np.array([])
 shortfall_deque = deque(maxlen=100)
