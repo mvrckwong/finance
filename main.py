@@ -1,13 +1,13 @@
 import numpy as np
+from collections import deque
 
 import market.synthetic_chriss_almgren as sca
 from agent.ddpg import Agent
 
-from collections import deque
-
 # Create simulation environment
 env = sca.MarketEnvironment()
 
+# Defining the agent
 # Initialize Feed-forward DNNs for Actor and Critic models. 
 agent = Agent(
     state_size=env.observation_space_dimension(), 
@@ -15,17 +15,10 @@ agent = Agent(
     random_seed=0
 )
 
-# Set the liquidation time
-lqt = 60
-
-# Set the number of trades
-n_trades = 60
-
-# Set trader's risk aversion
-tr = 1e-6
-
-# Set the number of episodes to run the simulation
-episodes = 1000
+lqt = 60		# Set the liquidation time
+n_trades = 60	# Set the number of trades
+tr = 1e-6		# Set trader's risk aversion
+episodes = 10000	# Set the number of episodes to run the simulation
 
 # 
 if __name__ == "__main__":
@@ -67,5 +60,6 @@ if __name__ == "__main__":
 		if (episode + 1) % 100 == 0: # print average shortfall over last 100 episodes
 			print('\rEpisode [{}/{}]\tAverage Shortfall: ${:,.2f}'.format(episode + 1, episodes, np.mean(shortfall_deque)))        
 
-		print('\nAverage Implementation Shortfall: ${:,.2f} \n'.format(np.mean(shortfall_hist)))
+		#print('Average Implementation Shortfall: ${:,.2f} \n'.format(np.mean(shortfall_hist)))
+
 
