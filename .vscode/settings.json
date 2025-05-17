@@ -1,0 +1,8 @@
+{
+    "editor.fontFamily": "'Fira Code Light', Consolas, 'Courier New', monospace",
+    "editor.fontSize": 16,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "dbt.enableNewLineagePanel": true
+}

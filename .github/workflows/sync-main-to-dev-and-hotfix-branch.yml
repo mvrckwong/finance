@@ -1,0 +1,104 @@
+name: Sync Main to Dev and Hotfix Branches
+
+# Trigger the workflow on pushes to the main branch
+on:
+  push:
+    branches:
+      - main
+
+# Grant permission to write repository content (push)
+permissions:
+  contents: write
+
+# Prevent concurrent runs for the same trigger to avoid race conditions
+# Use workflow level concurrency as jobs run in parallel
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job to sync main into the 'dev' branch
+  sync_to_dev:
+    name: Sync Main -> Dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history and branches, not just the triggering commit
+          fetch-depth: 0
+          # Use a token with write permissions
+          # The default GITHUB_TOKEN often works if repo settings allow workflow write access
+          # Otherwise, use a PAT stored as a secret: token: ${{ secrets.YOUR_PAT_SECRET }}
+          # token: ${{ secrets.YOUR_PAT_SECRET }} # Uncomment and replace if needed
+
+      - name: Set up Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions-bot@users.noreply.github.com"
+
+      - name: Switch to Dev Branch
+        run: git checkout dev
+
+      - name: Ensure Dev is Up-to-Date with Remote
+        run: git pull origin dev # Ensures local dev is current before merge
+
+      - name: Merge Main into Dev
+        id: merge_dev # Give this step an ID to reference its outcome
+        run: |
+          # Attempt to merge main into the current branch (dev)
+          # --no-ff: Creates a merge commit even if fast-forward is possible
+          # --no-edit: Uses the default merge commit message without opening an editor
+          git merge origin/main --no-ff --no-edit
+        # If merge conflicts occur, this step will fail the workflow
+
+      - name: Push Changes to Dev
+        run: git push origin dev
+
+      # Optional: Handle Merge Conflicts for Dev Branch
+      - name: Notify on Dev Merge Conflict
+        # This step runs only if the merge_dev step failed
+        if: failure() && steps.merge_dev.outcome == 'failure'
+        run: |
+          echo "::error::Merge conflict detected when merging main into dev. Manual resolution required."
+          # Add more advanced notifications here (e.g., Slack, issue creation) if desired
+          exit 1 # Ensure the job fails explicitly
+
+  # Job to sync main into the 'hotfix' branch
+  sync_to_hotfix:
+    name: Sync Main -> Hotfix
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # token: ${{ secrets.YOUR_PAT_SECRET }} # Uncomment and replace if needed
+
+      - name: Set up Git User
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions-bot@users.noreply.github.com"
+
+      - name: Switch to Hotfix Branch
+        run: git checkout hotfix
+
+      - name: Ensure Hotfix is Up-to-Date with Remote
+        run: git pull origin hotfix # Ensures local hotfix is current before merge
+
+      - name: Merge Main into Hotfix
+        id: merge_hotfix # Give this step an ID to reference its outcome
+        run: |
+          git merge origin/main --no-ff --no-edit
+
+      - name: Push Changes to Hotfix
+        run: git push origin hotfix
+
+      # Optional: Handle Merge Conflicts for Hotfix Branch
+      - name: Notify on Hotfix Merge Conflict
+        # This step runs only if the merge_hotfix step failed
+        if: failure() && steps.merge_hotfix.outcome == 'failure'
+        run: |
+          echo "::error::Merge conflict detected when merging main into hotfix. Manual resolution required."
+          # Add more advanced notifications here if desired
+          exit 1 # Ensure the job fails explicitly
