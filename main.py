@@ -27,40 +27,45 @@ tr = 1e-6
 # Set the number of episodes to run the simulation
 episodes = 1000
 
-shortfall_hist = np.array([])
-shortfall_deque = deque(maxlen=100)
-
-for episode in range(episodes): 
-    # Reset the enviroment
-    cur_state = env.reset(seed = episode, liquid_time = lqt, num_trades = n_trades, lamb = tr)
-
-    # set the environment to make transactions
-    env.start_transactions()
-
-    for i in range(n_trades + 1):
-      
-        # Predict the best action for the current state. 
-        action = agent.act(cur_state, add_noise = True)
-        
-        # Action is performed and new state, reward, info are received. 
-        new_state, reward, done, info = env.step(action)
-        
-        # current state, action, reward, new state are stored in the experience replay
-        agent.step(cur_state, action, reward, new_state, done)
-        
-        # roll over new state
-        cur_state = new_state
-
-        if info.done:
-            shortfall_hist = np.append(shortfall_hist, info.implementation_shortfall)
-            shortfall_deque.append(info.implementation_shortfall)
-            break
-        
-    if (episode + 1) % 100 == 0: # print average shortfall over last 100 episodes
-        print('\rEpisode [{}/{}]\tAverage Shortfall: ${:,.2f}'.format(episode + 1, episodes, np.mean(shortfall_deque)))        
-
-print('\nAverage Implementation Shortfall: ${:,.2f} \n'.format(np.mean(shortfall_hist)))
-
-
+# 
 if __name__ == "__main__":
-	None
+
+	shortfall_hist = np.array([])
+	shortfall_deque = deque(maxlen=100)
+
+	for episode in range(episodes): 
+		# Reset the enviroment
+		cur_state = env.reset(
+			seed = episode, 
+			liquid_time = lqt, 
+			num_trades = n_trades, 
+			lamb = tr
+		)
+
+		# set the environment to make transactions
+		env.start_transactions()
+
+		for i in range(n_trades + 1):
+			
+			# Predict the best action for the current state. 
+			action = agent.act(cur_state, add_noise = True)
+			
+			# Action is performed and new state, reward, info are received. 
+			new_state, reward, done, info = env.step(action)
+			
+			# current state, action, reward, new state are stored in the experience replay
+			agent.step(cur_state, action, reward, new_state, done)
+			
+			# roll over new state
+			cur_state = new_state
+
+			if info.done:
+				shortfall_hist = np.append(shortfall_hist, info.implementation_shortfall)
+				shortfall_deque.append(info.implementation_shortfall)
+				break
+			
+		if (episode + 1) % 100 == 0: # print average shortfall over last 100 episodes
+			print('\rEpisode [{}/{}]\tAverage Shortfall: ${:,.2f}'.format(episode + 1, episodes, np.mean(shortfall_deque)))        
+
+		print('\nAverage Implementation Shortfall: ${:,.2f} \n'.format(np.mean(shortfall_hist)))
+
