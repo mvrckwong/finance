@@ -1,5 +1,5 @@
 # # Workflow to ensure whenever a Github PR is submitted, 
-# # a JIRA ticket gets created automatically. 
+# a JIRA ticket gets created automatically. 
 # name: Manual Workflow
 
 # # Controls when the action will run. 
