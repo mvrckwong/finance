@@ -60,3 +60,7 @@ for episode in range(episodes):
         print('\rEpisode [{}/{}]\tAverage Shortfall: ${:,.2f}'.format(episode + 1, episodes, np.mean(shortfall_deque)))        
 
 print('\nAverage Implementation Shortfall: ${:,.2f} \n'.format(np.mean(shortfall_hist)))
+
+
+if __name__ == "__main__":
+	None
