@@ -1,6 +1,6 @@
 import numpy as np
 
-import syntheticChrissAlmgren as sca
+import market.synthetic_chriss_almgren as sca
 from agent.ddpg import Agent
 
 from collections import deque

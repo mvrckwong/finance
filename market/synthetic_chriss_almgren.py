@@ -286,4 +286,6 @@ class MarketEnvironment():
         # Stop transacting
         self.transacting = False            
             
-           
+
+if __name__ == "__main__":
+    None
