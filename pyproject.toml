@@ -10,5 +10,6 @@ dependencies = [
     "numpy>=2.2.5",
     "statsmodels>=0.14.4",
     "torch>=2.7.0",
+    "tqdm>=4.67.1",
     "wandb>=0.16.3",
 ]
