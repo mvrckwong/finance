@@ -4,6 +4,7 @@ import wandb
 import time
 from tqdm import tqdm
 import os
+import torch
 
 import market.synthetic_chriss_almgren as sca
 from agent.ddpg import Agent
@@ -23,6 +24,14 @@ lqt = 60        # Set the liquidation time
 n_trades = 60   # Set the number of trades
 tr = 1e-6       # Set trader's risk aversion
 episodes = 10000    # Set the number of episodes to run the simulation
+
+def checkpoint(i_episode, scores_window, scores):
+    print("\rEpisode {}\t\tAvg Score: {:.2f}\t\tMax Score: {:.2f}".format(i_episode, np.mean(scores_window), np.max(scores)), end="")
+    if i_episode % 100 == 0:
+        print("\rEpisode {}\t\tAvg Score: {:.2f}".format(i_episode, np.mean(scores_window)))
+    if i_episode % 200 == 0:
+        torch.save(agent.actor_local.state_dict(), os.path.join(checkpoint_dir, f'checkpoint_{i_episode}_actor.pth'))
+        torch.save(agent.critic_local.state_dict(), os.path.join(checkpoint_dir, f'checkpoint_{i_episode}_critic.pth'))
 
 # 
 if __name__ == "__main__":
@@ -45,6 +54,7 @@ if __name__ == "__main__":
     # Pre-allocate numpy array for better performance
     shortfall_hist = np.zeros(episodes)
     shortfall_deque = deque(maxlen=100)
+    scores = []  # Store all scores for max score calculation
     
     # Use tqdm for better progress tracking
     pbar = tqdm(range(episodes), desc="Training")
@@ -84,9 +94,13 @@ if __name__ == "__main__":
                 # Store directly in pre-allocated array - more efficient
                 shortfall_hist[episode] = info.implementation_shortfall
                 shortfall_deque.append(info.implementation_shortfall)
+                scores.append(episode_reward)  # Add to scores list
                 
                 # Calculate metrics
                 avg_shortfall = np.mean(shortfall_deque)
+                
+                # Call checkpoint function
+                checkpoint(episode, shortfall_deque, scores)
                 
                 # Log episode results to wandb
                 wandb.log({
@@ -108,8 +122,8 @@ if __name__ == "__main__":
                     best_avg_shortfall = avg_shortfall
                     actor_path = os.path.join(checkpoint_dir, "best_actor.pth")
                     critic_path = os.path.join(checkpoint_dir, "best_critic.pth")
-                    #
-                    # agent.save(actor_path, critic_path)
+                    torch.save(agent.actor_local.state_dict(), actor_path)
+                    torch.save(agent.critic_local.state_dict(), critic_path)
                     wandb.log({"best_avg_shortfall": best_avg_shortfall})
                 
                 break
@@ -119,7 +133,6 @@ if __name__ == "__main__":
             # Save periodically with episode number
             actor_path = os.path.join(checkpoint_dir, f"actor_episode_{episode+1}.pth")
             critic_path = os.path.join(checkpoint_dir, f"critic_episode_{episode+1}.pth")
-            #agent.save(actor_path, critic_path)
             
             # # Log files to wandb
             # wandb.save(actor_path)
