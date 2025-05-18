@@ -3,7 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-import syntheticChrissAlmgren as sca
+# import syntheticChrissAlmgren as sca
+import market.synthetic_chriss_almgren as sca
 
 from statsmodels.iolib.table import SimpleTable
 from statsmodels.compat.python import zip_longest
